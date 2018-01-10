@@ -8,10 +8,10 @@ public class LibraryInquirySystem {
     private Connection conn;
 
     public void launch(){
-        String jdbcName = "com.mysql.jdbc.Driver"; //String jdbcName = "oracle.jdbc.driver.OracleDriver";
-        String link = "jdbc:mysql://appsrvdb.cse.cuhk.edu.hk"; //String link = "jdbc:oracle:thin:@db12.cse.cuhk.edu.hk:1521:db12";
-        String username = "CSCI3170S27";
-        String password = "123456";
+        String jdbcName = "oracle.jdbc.driver.OracleDriver"; //String jdbcName = "oracle.jdbc.driver.OracleDriver";
+        String link = "jdbc:oracle:thin:@db12.cse.cuhk.edu.hk:1521:db12"; //String link = "jdbc:oracle:thin:@db12.cse.cuhk.edu.hk:1521:db12";
+        String username = "c004";
+        String password = "riecdylb";
         try{
             Class.forName(jdbcName);
             conn = DriverManager.getConnection(link, username, password);
@@ -21,17 +21,6 @@ public class LibraryInquirySystem {
             return;
         }
         System.out.println("Welcome to library inquiry system!");
-        try
-            {
-                Statement stmt = conn.createStatement();
-                stmt.execute("USE CSCI3170S27");
-                stmt.close();
-            }
-        catch(Exception e)
-            {
-                System.out.println("Fail to use");
-                return;
-            }
         while(displayMainMenu());
         try{
             conn.close();
@@ -64,7 +53,6 @@ public class LibraryInquirySystem {
             String line = in.readLine();
             while(line != null) {
                 if (line.length() > 0) {
-                    System.out.println(line.split("\t"));
                     data.add(line.split("\t"));
                 }
                 line = in.readLine();
@@ -233,19 +221,13 @@ public class LibraryInquirySystem {
         System.out.print("Processing...");
         try{
             Statement stmt = conn.createStatement();
-            String EMPLOYEE_TABLE = "create table MyEmployees3 ( "
-                + "   id INT PRIMARY KEY, firstName VARCHAR(20), lastName VARCHAR(20), "
-                + "   title VARCHAR(20), salary INT )";
-            stmt.executeUpdate(EMPLOYEE_TABLE);
             String table1 = "CREATE TABLE Category (cid INT NOT NULL, max INT NOT NULL, period INT NOT NULL, PRIMARY KEY(cid))";
-            System.out.println(table1);
             String table2 = "CREATE TABLE Libuser (libuid VARCHAR(10) NOT NULL, name VARCHAR(25) NOT NULL, address VARCHAR(100) NOT NULL, cid INT NOT NULL, PRIMARY KEY(libuid))";
             String table3 = "CREATE TABLE Book (callnum VARCHAR(8) NOT NULL, title VARCHAR(30) NOT NULL, publish DATE NOT NULL, PRIMARY KEY(callnum))";
             String table4 = "CREATE TABLE Copy (callnum VARCHAR(8) NOT NULL, copynum INT NOT NULL, PRIMARY KEY(callnum, copynum), FOREIGN KEY (callnum) REFERENCES Book(callnum))";
             String table5 = "CREATE TABLE Borrow (libuid VARCHAR(10) NOT NULL, callnum VARCHAR(8) NOT NULL, copynum INT NOT NULL, checkout DATE NOT NULL, returndate DATE, PRIMARY KEY(libuid, callnum, copynum, checkout), FOREIGN KEY (libuid) REFERENCES Libuser(libuid), FOREIGN KEY (callnum, copynum) REFERENCES Copy(callnum, copynum))";
             String table6 = "CREATE TABLE Authorship (aname VARCHAR(25) NOT NULL, callnum VARCHAR(8) NOT NULL, PRIMARY KEY(aname, callnum), FOREIGN KEY (callnum) REFERENCES Book(callnum))";
             stmt.executeUpdate(table1);
-            System.out.println(table1);
             stmt.executeUpdate(table2);
             stmt.executeUpdate(table3);
             stmt.executeUpdate(table4);
@@ -283,12 +265,9 @@ public class LibraryInquirySystem {
             String folder = in.readLine();
             System.out.print("Processing...");
             List<String[]> category= getStrData(folder, "category.txt");
-            System.out.println(category.get(1)[1]);
             List<String[]> user= getStrData(folder, "user.txt");
-            System.out.println("1");
             List<String[]> book= getStrData(folder, "book.txt");
-            List<String[]> checkOut= getStrData(folder, "checkout.txt");
-            
+            List<String[]> checkOut= getStrData(folder, "check_out.txt");
             if(category == null || user == null || book == null || checkOut == null){
                 System.out.println("\n[Error]: Wrong path or Missing file");
                 return;
@@ -297,12 +276,10 @@ public class LibraryInquirySystem {
             pstmt = conn.prepareStatement("INSERT INTO Category VALUES (?, ?, ?)");
             for(String[] line : category){
                 pstmt.setInt(1, Integer.parseInt(line[0]));
-                System.out.println(line[1]);
                 pstmt.setInt(2, Integer.parseInt(line[1]));
                 pstmt.setInt(3, Integer.parseInt(line[2]));
                 pstmt.executeUpdate();
             }
-            
             pstmt.close();
             pstmt = conn.prepareStatement("INSERT INTO Libuser VALUES (?, ?, ?, ?)");
             for(String[] line : user){
